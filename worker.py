@@ -23,8 +23,8 @@ class worker:
         tf.close()
         i = lizard.analyze_file(args_passed.filename)
         os.remove(args_passed.filename)
-        print(i.__dict__['nloc'])
-        return i.__dict__['nloc']
+        print(i.average_cyclomatic_complexity)
+        return i.average_cyclomatic_complexity
 
     def POST(self):
         return
