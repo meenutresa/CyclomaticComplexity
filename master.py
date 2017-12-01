@@ -47,11 +47,11 @@ class work_done:
             cc_average = cc_total/work_done_count
         return "received result successfully"
 
-no_of_workers = 0
-filelist_per_commit = {}
-work_assigned_key=1
-work_done_count = 0
-cc_total = 0
+no_of_workers = 0 #to count the number of workers
+filelist_per_commit = {} #to store commit and file in commit
+work_assigned_key=1 #to track how much work is assigned to workers
+work_done_count = 0 #to track hwo much work is completed by the workers
+cc_total = 0 #to summing cyclomatc complexity of each file
 if __name__ == "__main__":
     #get the repository and get the commit details. save in a dictionary object
     repo = git.Repo("C:/Users/HP/Documents/GitHub/mlframework")
