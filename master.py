@@ -1,10 +1,10 @@
 import web
 import os
-import MyApplication
+import MyWebApplication
 import git
 
 urls = (
-    '/','master'
+    '/master','master'
 )
 
 class master:
@@ -15,16 +15,14 @@ class master:
     def POST(self):
         return
 
-
-
 if __name__ == "__main__":
-    #get the repository and get the commit details. save that to a file
+    #get the repository and get the commit details. save in a dictionary object
     repo = git.Repo("C:/Users/HP/Documents/GitHub/mlframework")
     commits_list = list(repo.iter_commits('master'))
-    database = shelve.open('commit_details.dat')
+    filelist_per_commit = {}
     for commit in commits_list:
-        database[commit.hexsha] = list(commit.stats.files.keys())
-    #print(database['638d8fc545dc86af94edf1ec57f0102404ef9efe'])
+        filelist_per_commit[commit.hexsha] = list(commit.stats.files.keys())
+    print(filelist_per_commit['638d8fc545dc86af94edf1ec57f0102404ef9efe'])
 
-    app = MyApplication.MyApplication(urls, globals())
+    app = MyWebApplication.MyWebApplication(urls, globals())
     app.run(port=8080)
