@@ -20,8 +20,8 @@ class master:
         #Give the work to the worker who has approached
         print("inside post")
         worker_address = web.input(hostid='',port='')
+        web.config.lock.acquire()
         if web.config.work_assigned_key <= len(web.config.filelist_per_commit):
-            web.config.lock.acquire()
             work_details = web.config.filelist_per_commit[web.config.work_assigned_key]
             web.config.work_assigned_key = web.config.work_assigned_key+1
             web.config.lock.release()
@@ -30,6 +30,7 @@ class master:
             requests.get(url)
             return "work assigned"
         else:
+            web.config.lock.release()
             return "Nowork"
 class register:
     #register class for the workers to register
