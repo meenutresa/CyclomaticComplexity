@@ -5,9 +5,9 @@ import git
 import requests
 
 urls = (
-    '/master','master'
-    '/register','register'
-    '/work_done','work_done'
+    '/master',"master",
+    '/register/',"register",
+    '/work_done',"work_done"
 )
 
 class master:
@@ -17,21 +17,27 @@ class master:
 
     def POST(self):
         #Give the work to the worker who has approached
+        print("inside post")
         worker_address = web.input(hostid='',port='')
-        work_details = filelist_per_commit[work_assigned_key]
-        work_assigned_key = work_assigned_key+1
-        url = "http://" + str(worker_address.hostid) + ":"+ str(worker_address.port)+":/worker?id="+str(work_details[0])+"&filename="+str(work_details[1])
-        requests.get(url)
-        return "work assigned"
+        if web.config.work_assigned_key <= len(web.config.filelist_per_commit):
+            work_details = web.config.filelist_per_commit[web.config.work_assigned_key]
+            web.config.work_assigned_key = web.config.work_assigned_key+1
+            url = "http://" + str(worker_address.hostid) + ":"+ str(worker_address.port)+"/worker?id="+str(work_details[0])+"&filename="+str(work_details[1])
+            print(url)
+            requests.get(url)
+            return "work assigned"
+        else:
+            return "Nowork"
 class register:
     #register class for the workers to register
     def GET(self):
-        return
+        #regiser the worker
+        web.config.no_of_workers = web.config.no_of_workers+1
+        print("inside register")
+        return "active"
 
     def POST(self):
-        #regiser the worker
-        no_of_workers = no_of_workers+1
-        return "active"
+        return
 class work_done:
     #register class for the workers to register
     def GET(self):
@@ -41,27 +47,35 @@ class work_done:
         #get the result from the worker and add to cc_total to get the total
         #if all the works are done, then the average is taken
         cyclomatic_complexity = web.input(cc='')
-        work_done_count = work_done_count+1
-        cc_total = cc_total + int(cyclomatic_complexity.cc)
-        if work_done_count == len(filelist_per_commit):
-            cc_average = cc_total/work_done_count
+        web.config.work_done_count = web.config.work_done_count+1
+        web.config.cc_total = web.config.cc_total + float(cyclomatic_complexity.cc)
+        print("Recieved CC",cyclomatic_complexity.cc)
+        print("web.config.work_done_count",web.config.work_done_count)
+        print("len(web.config.filelist_per_commit)",len(web.config.filelist_per_commit))
+        if web.config.work_done_count == len(web.config.filelist_per_commit):
+            cc_average = web.config.cc_total/web.config.work_done_count
+            print("Average :",cc_average)
         return "received result successfully"
 
-no_of_workers = 0 #to count the number of workers
-filelist_per_commit = {} #to store commit and file in commit
-work_assigned_key=1 #to track how much work is assigned to workers
-work_done_count = 0 #to track hwo much work is completed by the workers
-cc_total = 0 #to summing cyclomatc complexity of each file
-if __name__ == "__main__":
+if __name__ == '__main__':
+    no_of_workers = 0 #to count the number of workers
+    filelist_per_commit = {} #to store commit and file in commit
+    work_assigned_key=1 #to track how much work is assigned to workers
+    work_done_count = 0 #to track hwo much work is completed by the workers
+    cc_total = 0 #to summing cyclomatc complexity of each file
     #get the repository and get the commit details. save in a dictionary object
+
+    app = MyWebApplication.MyWebApplication(urls, globals())
+    web.config.update({"no_of_workers":0, "filelist_per_commit" : {},"work_assigned_key":1,"work_done_count" : 0,"cc_total" : 0})
+
     repo = git.Repo("C:/Users/HP/Documents/GitHub/mlframework")
     commits_list = list(repo.iter_commits('master'))
     i=1
     for commit in commits_list:
         for file_key in commit.stats.files.keys():
-            filelist_per_commit[i] = [commit.hexsha,file_key]
+            if file_key
+            web.config.filelist_per_commit[i] = [commit.hexsha,file_key]
             i=i+1
-    print(len(filelist_per_commit))
+    print(len(web.config.filelist_per_commit))
 
-    app = MyWebApplication.MyWebApplication(urls, globals())
     app.run(port=8080)

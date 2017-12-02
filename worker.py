@@ -5,10 +5,9 @@ import lizard
 import sys
 import os
 import requests
+import threading
 
-urls = (
-    '/worker','worker'
-)
+
 
 class worker:
     #worker class
@@ -24,7 +23,7 @@ class worker:
         tf.close()
         i = lizard.analyze_file(args_passed.filename)
         os.remove(args_passed.filename)
-        print(i.average_cyclomatic_complexity)
+        print("CC",i.average_cyclomatic_complexity)
         url = "http://localhost:8080/work_done?cc="+str(i.average_cyclomatic_complexity)
         workdone_response = requests.post(url)
         #return i.average_cyclomatic_complexity
@@ -32,16 +31,33 @@ class worker:
     def POST(self):
         return
 
+class MyWebAppRun(threading.Thread):
+    def run (self):
+        urls = (
+            '/worker','worker'
+        )
+        app = MyWebApplication.MyWebApplication(urls, globals())
+        app.run(port=port)
+
 
 if __name__ == "__main__":
     #get the port
     host = sys.argv[1]
     port = int(sys.argv[2])
-    app = MyWebApplication.MyWebApplication(urls, globals())
-    app.run(port=port)
+    print("main")
+    MyWebAppRun().start()
     #register the worker with the master
-    register_response = requests.post("http://localhost:8080/register/")
-    #if the worker is registered, then request for work from the master
-    if register.response == 'active':
-        url = "http://localhost:8080/master?hostid="+str(host)+"&port="+str(port)
-        requests.post(url)
+    while True:
+        register_response = requests.get("http://localhost:8080/register/")
+        #if the worker is registered, then request for work from the master
+        print(register_response.text)
+        #print(register_response)
+        if register_response.text == 'active':
+            print("inside loop")
+            url = "http://localhost:8080/master?hostid="+str(host)+"&port="+str(port)
+            print(url)
+            response = requests.post(url)
+            if response.text == 'Nowork':
+                break;
+
+    print("returned from loop")
