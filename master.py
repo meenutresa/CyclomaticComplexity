@@ -57,7 +57,7 @@ class work_done:
         print("Recieved CC",cyclomatic_complexity.cc)
         print("web.config.work_done_count",web.config.work_done_count)
         print("len(web.config.filelist_per_commit)",len(web.config.filelist_per_commit))
-        if web.config.work_done_count >= len(web.config.filelist_per_commit):
+        if web.config.work_done_count == len(web.config.filelist_per_commit):
             cc_average = web.config.cc_total/web.config.work_done_count
             print("Average :",cc_average)
         return "received result successfully"
