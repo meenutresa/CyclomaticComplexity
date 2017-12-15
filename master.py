@@ -4,12 +4,26 @@ import MyWebApplication
 import git
 import requests
 import threading
+import psutil
+import time
 
 urls = (
     '/master',"master",
     '/register/',"register",
-    '/work_done',"work_done"
+    '/work_done',"work_done",
+    '/stats/',"stats"
 )
+
+class stats:
+    #stats class - gets the CPU utilization and memory utilization while the workers are running.
+    #We call this from a separate client when the cyclomatic complexity is calculated
+    def GET(self):
+        cpu_stats = psutil.cpu_percent()
+        print("cpu_stats: ",cpu_stats)
+        memory_stats = psutil.virtual_memory()
+        print("memory_stats: ",memory_stats)
+        stats = "cpu_stats : "+str(cpu_stats)+"memory_stats :"+str(memory_stats)
+        return stats
 
 class master:
     #master class
@@ -19,6 +33,8 @@ class master:
     def POST(self):
         #Give the work to the worker who has approached
         print("inside post")
+        if web.config.work_assigned_key == 1:
+            web.config.start_timestamp = time.time()
         worker_address = web.input(hostid='',port='')
         web.config.lock.acquire()
         if web.config.work_assigned_key <= len(web.config.filelist_per_commit):
@@ -58,9 +74,12 @@ class work_done:
         print("Recieved CC",cyclomatic_complexity.cc)
         print("web.config.work_done_count",web.config.work_done_count)
         print("len(web.config.filelist_per_commit)",len(web.config.filelist_per_commit))
-        if web.config.work_done_count == len(web.config.filelist_per_commit):
+        if web.config.work_done_count == len(web.config.filelist_per_commit)-2:
             cc_average = web.config.cc_total/web.config.work_done_count
             print("Average :",cc_average)
+            end_timestamp = time.time()
+            time_taken = end_timestamp - web.config.start_timestamp
+            print("time_taken: ",time_taken)
         return "received result successfully"
 
 if __name__ == '__main__':
@@ -72,7 +91,7 @@ if __name__ == '__main__':
     #get the repository and get the commit details. save in a dictionary object
 
     app = MyWebApplication.MyWebApplication(urls, globals())
-    web.config.update({"no_of_workers":0, "filelist_per_commit" : {},"work_assigned_key":1,"work_done_count" : 0,"cc_total" : 0,"lock": threading.Lock()})
+    web.config.update({"no_of_workers":0, "filelist_per_commit" : {},"work_assigned_key":1,"work_done_count" : 0,"cc_total" : 0,"lock": threading.Lock(),"start_timestamp":0})
 
     repo = git.Repo("C:/Users/HP/Documents/GitHub/mlframework")
     commits_list = list(repo.iter_commits('master'))
